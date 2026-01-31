@@ -1,26 +1,221 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- TODO: Set the document title to the name of your application -->
-    <title>Lovable App</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Assignify - Universal TMA Solver</title>
+    <script>
+      // Safe Polyfill for process.env - MUST RUN BEFORE IMPORTS
+      window.process = window.process || {};
+      window.process.env = window.process.env || { API_KEY: '' };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Fonts: Handwriting + Clean UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Cedarville+Cursive&family=Shadows+Into+Light&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+      ::-webkit-scrollbar { width: 4px; height: 4px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+      body {
+        background-color: #0f0f12;
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      
+      * {
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+      }
+      
+      /* Ballpoint Pen Ink Effect */
+      .ballpoint-ink {
+        color: #0a2472;
+        mix-blend-mode: multiply;
+      }
+      
+      /* Graphite Pencil Effect (Enhanced) */
+      .graphite-pencil {
+        color: #2d2d2d;
+        mix-blend-mode: multiply;
+        filter: url(#pencilTexture);
+        opacity: 0.9;
+      }
 
-    <!-- TODO: Update og:title to match your application name -->
-    <meta property="og:title" content="Lovable App" />
-    <meta property="og:description" content="Lovable Generated Project" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+      /* Hacker / CRT Terminal Theme - Subtle effect for smooth rendering */
+      .crt-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: transparent;
+        pointer-events: none;
+        z-index: 999;
+      }
+      
+      .terminal-text {
+        text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+      }
+      
+      .terminal-cursor {
+        display: inline-block;
+        width: 10px;
+        height: 1.2em;
+        background-color: #0f0;
+        animation: blink 1s step-end infinite;
+        vertical-align: middle;
+      }
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-  </head>
+      @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+      
+      @keyframes writeIn {
+        from { opacity: 0; transform: translateY(-2px) scale(0.9); }
+        to { opacity: var(--target-opacity, 1); transform: translateY(var(--target-y, 0)) scale(var(--target-scale, 1)) rotate(var(--target-rot, 0)); }
+      }
 
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes slideIn {
+        from { opacity: 0; transform: translateX(-10px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
+
+      @keyframes scanline {
+        0% { top: -10%; }
+        100% { top: 110%; }
+      }
+
+      @keyframes scanVertical {
+        0% { top: 0; }
+        100% { top: 100%; }
+      }
+
+      @keyframes scanPulse {
+        0%, 100% { opacity: 0.1; }
+        50% { opacity: 0.3; }
+      }
+
+      @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(200%); }
+      }
+
+      @keyframes glowPulse {
+        0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); }
+        50% { box-shadow: 0 0 40px rgba(0, 255, 0, 0.4); }
+      }
+
+      .animate-fadeIn {
+        animation: fadeIn 0.3s ease-out forwards;
+      }
+
+      .animate-slideUp {
+        animation: slideUp 0.4s ease-out forwards;
+      }
+
+      .animate-slideIn {
+        animation: slideIn 0.3s ease-out forwards;
+      }
+
+      .animate-scanline {
+        animation: scanline 3s linear infinite;
+      }
+
+      .animate-scanVertical {
+        animation: scanVertical 1.5s ease-in-out infinite;
+      }
+
+      .animate-scanPulse {
+        animation: scanPulse 2s ease-in-out infinite;
+      }
+
+      .animate-shimmer {
+        animation: shimmer 2s ease-in-out infinite;
+      }
+
+      .animate-glowPulse {
+        animation: glowPulse 2s ease-in-out infinite;
+      }
+
+      .scroll-mt-24 {
+        scroll-margin-top: 6rem;
+      }
+
+      select option {
+        background-color: #111;
+        color: #0f0;
+      }
+
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background: white; }
+        .no-print { display: none !important; }
+        .crt-overlay { display: none !important; }
+        .paper-sheet-container {
+          width: 210mm;
+          height: 297mm;
+          page-break-after: always;
+          margin: 0 auto;
+          overflow: hidden;
+          padding: 0 !important;
+          background: white;
+          transform: none !important;
+          box-shadow: none !important;
+        }
+        .paper-content { padding-top: 1cm !important; }
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      }
+    </style>
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "lucide-react": "https://esm.sh/lucide-react@0.263.1",
+    "@google/genai": "https://esm.sh/@google/genai@0.0.21",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+  <link rel="stylesheet" href="/index.css">
+</head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    <div class="crt-overlay"></div>
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      <defs>
+        <filter id="scannerNoise">
+          <feTurbulence type="fractalNoise" baseFrequency="0.80" numOctaves="4" stitchTiles="stitch" result="colorNoise" />
+          <feColorMatrix in="colorNoise" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0" />
+          <feComposite operator="in" in2="SourceGraphic" result="monoNoise"/>
+          <feBlend in="SourceGraphic" in2="monoNoise" mode="multiply" />
+        </filter>
+        
+        <!-- Enhanced Graphite Pencil Texture - More visible grain -->
+        <filter id="pencilTexture" x="-20%" y="-20%" width="140%" height="140%">
+           <!-- Lower frequency = larger grain -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.5" numOctaves="4" result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+          <feMorphology operator="erode" radius="0.4" in="displaced" result="eroded" />
+          <feComposite operator="in" in="noise" in2="eroded" result="textured" />
+          <feBlend in="eroded" in2="textured" mode="multiply" result="blended" />
+        </filter>
+      </defs>
+    </svg>
+    <script type="module" src="./index.tsx"></script>
+  <script type="module" src="/index.tsx"></script>
+</body>
 </html>
